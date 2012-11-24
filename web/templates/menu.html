@@ -1,0 +1,41 @@
+<script type="text/template" id="_menu">
+    <% menu.each(function (element, index, list) {%>
+    <%=element.get("item")%><br>
+    <% }); %>
+</script>
+
+<script type="text/javascript">
+    {
+        var MenuItemModel = Backbone.Model.extend({
+            defaults:{
+                "item":""
+            }
+        });
+
+        var Menu = Backbone.Collection.extend({
+            model:MenuItemModel
+        });
+
+        var MenuView = Backbone.View.extend({
+            initialize:function () {
+                this.collection.bind('change', this.render, this);
+            },
+            render:function () {
+                $("#divMenu").html(mimas.getTemplate("_menu")({menu:this.collection}));
+            }
+        });
+
+        var menu = new Menu([
+            {item:"кино"},
+            {item:"вино"},
+            {item:"домино"}
+        ]);
+
+        new MenuView({collection:menu});
+        menu.trigger("change");
+    }
+</script>
+
+<div id="divMenu">
+
+</div>
