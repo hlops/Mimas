@@ -1,0 +1,172 @@
+<style type="text/css">
+
+    .scroll {
+    }
+
+    #divFotoMenu {
+        width: 300px;
+        float: left;
+        height: 100%;
+        overflow: auto;
+    }
+
+    #divFotoContext {
+        display: block;
+        height: 100%;
+        overflow: auto;
+    }
+
+    #divFotoContext img {
+        margin: 2px 0;
+    }
+</style>
+
+<script type="text/template" id="_albums">
+    <ul class="nav nav-list bs-docs-sidenav scroll">
+        <% albums.each(function (album) {%>
+        <% if (album) { %>
+        <li
+        <%=mimas.foto.currentAlbum == album.get("id")?"class='active'":""%>><a href='#foto/<%=album.get("id")%>'><i
+            class="icon-chevron-right"></i><%=album.get("name")%></a>
+        <%
+        var children = album.get("albums");
+        if (children) { %>
+        <%=mimas.getTemplate("_albums")({albums:new Albums(children)})%>
+        <% } %>
+        </li>
+        <% } %>
+        <% }); %>
+    </ul>
+</script>
+
+<script type="text/template" id="_photos">
+    <ul class="nav nav-list bs-docs-sidenav scroll">
+        <% _.each(album.get("items"), function (item, index, list) {%>
+        <a href='/rest/foto/view/<%=album.get("id")%>/<%=item.name%>'>
+            <img src='/rest/foto/thumb/<%=album.get("id")%>/<%=item.name%>' class="img-rounded"
+                 onload='mimas.foto.albumView.adjustPhotosDelayed()'>
+        </a>
+        <% }); %>
+    </ul>
+</script>
+
+<div id="divFotoMenu" class="scroll">
+</div>
+
+<div id="divFotoContext">
+</div>
+
+<div id="divLog">
+</div>
+
+<script type="text/javascript">
+    $("#_albums").parent().off("templateLoaded").on("templateLoaded", function (e, el, args) {
+        if (!mimas.foto) {
+            mimas.foto = {};
+        }
+        mimas.foto.currentAlbum = args[0];
+        new AlbumsView({collection:new Albums()});
+        var album = new Album();
+        album.url = "/rest/foto/album/" + args[0];
+        album.fetch({
+            success:function () {
+                album.trigger("reset");
+            }
+        });
+        mimas.foto.albumView = new AlbumView({model:album});
+    });
+
+    var Album = Backbone.Model.extend({
+        defaults:{
+            "id":0,
+            "item":"",
+            "description":"",
+            "items":[],
+            "albums":[]
+        }
+    });
+
+    var Photo = Backbone.Model.extend({
+        defaults:{
+            "name":"",
+            "description":""
+        }
+    });
+
+    var Albums = Backbone.Collection.extend({
+        model:Album,
+        url:"/rest/foto/albums",
+        initialize:function () {
+            this.fetch();
+        }
+    });
+
+    var AlbumsView = Backbone.View.extend({
+        initialize:function () {
+            this.collection.bind('reset', this.render, this);
+        },
+        render:function () {
+            $("#divFotoMenu").append(mimas.getTemplate("_albums")({albums:this.collection}));
+        }
+    });
+
+    var AlbumView = Backbone.View.extend({
+        initialize:function () {
+            mimas.foto.adjustPhotosCounter = 0;
+            this.model.bind('reset', this.render, this);
+        },
+        render:function () {
+            $(window).off("resize").on("resize", this.adjustPhotosDelayed);
+            $("#divFotoContext").append(mimas.getTemplate("_photos")({album:this.model}));
+        },
+        adjustPhotosDelayed:function (forse) {
+            ++mimas.foto.adjustPhotosCounter;
+            if (mimas.foto.adjustPhotosCounter == 1 || forse) {
+                setTimeout(mimas.foto.albumView.adjustPhotos, 10);
+            }
+        },
+        adjustPhotos:function () {
+            try {
+                var $images = $("#divFotoContext img");
+                var maxWidth = 0;
+                $images.each(function () {
+                    var $img = $(this);
+                    if ($img.width() == 0) {
+                        maxWidth = 0;
+                        return false;
+                    }
+                    if ($img.offset().left + $img.width() > maxWidth) maxWidth = $img.offset().left + $img.width();
+                });
+                if (maxWidth == null) return;
+                var first = -1, left = $images.eq(0).offset().left;
+                $images.css("padding-right", 0);
+                $images.each(function (n) {
+                    var $img = $(this);
+                    if ($img.offset().left == left) {
+                        if (first != -1 && n - first > 1) {
+                            var $imgLast = $images.eq(n - 1);
+                            var w = $imgLast.offset().left + $imgLast.width();
+                            if (w < maxWidth) {
+                                var d = Math.floor((maxWidth - w) / (n - first - 1));
+                                var d1 = (maxWidth - w) % (n - first - 1);
+                                for (var i = first; i < n - 1; i++) {
+                                    var dx = d + (d1-- > 0 ? 1 : 0);
+                                    $images.eq(i).css("padding-right", dx);
+                                }
+                            }
+                        }
+                        first = n;
+                    }
+
+                });
+            } finally {
+                var counter = mimas.foto.adjustPhotosCounter;
+                mimas.foto.adjustPhotosCounter = 0;
+                if (counter > 1) {
+                    mimas.foto.albumView.adjustPhotosDelayed(true);
+                }
+            }
+        }
+    });
+
+</script>

@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="Mimas:Web">
+    <output-path>$PROJECT_DIR$/out/artifacts/Mimas_Web</output-path>
+    <root id="archive" name="Mimas_Web.war">
+      <element id="artifact" artifact-name="Mimas:Web exploded" />
+    </root>
+  </artifact>
+</component>

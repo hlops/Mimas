@@ -5,4 +5,26 @@
 		  http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
            version="2.5">
 
+    <servlet>
+        <servlet-name>REST Service</servlet-name>
+        <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+        <init-param>
+            <param-name>com.sun.jersey.config.property.packages</param-name>
+            <param-value>com.hlops.mimas.service.core;com.hlops.mimas.service.plugins</param-value>
+        </init-param>
+        <init-param>
+            <param-name>com.sun.jersey.spi.container.ContainerRequestFilters</param-name>
+            <param-value>com.hlops.mimas.service.auth.SecurityFilter</param-value>
+        </init-param>
+            <init-param>
+                <param-name>com.sun.jersey.spi.container.ContainerResponseFilters</param-name>
+                <param-value>com.hlops.mimas.service.auth.SecurityFilter</param-value>
+            </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>REST Service</servlet-name>
+        <url-pattern>/rest/*</url-pattern>
+    </servlet-mapping>
 </web-app>
