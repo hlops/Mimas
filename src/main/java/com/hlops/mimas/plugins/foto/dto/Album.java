@@ -1,6 +1,11 @@
 package com.hlops.mimas.plugins.foto.dto;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOCase;
+import org.apache.commons.io.filefilter.FalseFileFilter;
+import org.apache.commons.io.filefilter.NameFileFilter;
+import org.apache.commons.io.filefilter.SuffixFileFilter;
+import org.apache.commons.io.filefilter.WildcardFileFilter;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -74,10 +79,11 @@ public class Album {
         synchronized (isLoaded) {
             if (!isLoaded) {
                 File root = new File(path);
-                Iterator<File> it = FileUtils.iterateFiles(root, IMAGE_EXTENSIONS, false);
+                Iterator<File> it = FileUtils.iterateFiles(root, new SuffixFileFilter(IMAGE_EXTENSIONS, IOCase.SYSTEM), FalseFileFilter.FALSE);
                 this.items.clear();
                 while (it.hasNext()) {
                     File f = it.next();
+                    System.out.println(f.getName());
                     this.items.add(new Photo(f));
                 }
             }

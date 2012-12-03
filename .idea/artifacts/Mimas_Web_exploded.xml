@@ -1,5 +1,5 @@
 <component name="ArtifactManager">
-  <artifact type="exploded-war" name="Mimas:Web exploded">
+  <artifact type="exploded-war" build-on-make="true" name="Mimas:Web exploded">
     <output-path>$PROJECT_DIR$/out/artifacts/Mimas_Web_exploded</output-path>
     <root id="root">
       <element id="javaee-facet-resources" facet="Mimas/web/Web" />

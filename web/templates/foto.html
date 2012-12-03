@@ -16,8 +16,17 @@
         overflow: auto;
     }
 
+    #divFotoContext a {
+        text-decoration: none;
+    }
+
     #divFotoContext img {
         margin: 2px 0;
+    }
+
+    #imgFoto {
+        position: absolute;
+        display: none;
     }
 </style>
 
@@ -42,8 +51,9 @@
 <script type="text/template" id="_photos">
     <ul class="nav nav-list bs-docs-sidenav scroll">
         <% _.each(album.get("items"), function (item, index, list) {%>
-        <a href='/rest/foto/view/<%=album.get("id")%>/<%=item.name%>'>
-            <img src='/rest/foto/thumb/<%=album.get("id")%>/<%=item.name%>' class="img-rounded"
+        <a href='rest/foto/view/<%=album.get("id")%>/<%=item.name%>'
+           onclick='return mimas.foto.albumView.showPhoto(this);'>
+            <img src='rest/foto/thumb/<%=album.get("id")%>/<%=item.name%>' class="img-rounded"
                  onload='mimas.foto.albumView.adjustPhotosDelayed()'>
         </a>
         <% }); %>
@@ -67,7 +77,7 @@
         mimas.foto.currentAlbum = args[0];
         new AlbumsView({collection:new Albums()});
         var album = new Album();
-        album.url = "/rest/foto/album/" + args[0];
+        album.url = "rest/foto/album/" + args[0];
         album.fetch({
             success:function () {
                 album.trigger("reset");
@@ -95,7 +105,7 @@
 
     var Albums = Backbone.Collection.extend({
         model:Album,
-        url:"/rest/foto/albums",
+        url:"rest/foto/albums",
         initialize:function () {
             this.fetch();
         }
@@ -114,10 +124,12 @@
         initialize:function () {
             mimas.foto.adjustPhotosCounter = 0;
             this.model.bind('reset', this.render, this);
+            this.$img = $("#imgFoto");
         },
         render:function () {
             $(window).off("resize").on("resize", this.adjustPhotosDelayed);
             $("#divFotoContext").append(mimas.getTemplate("_photos")({album:this.model}));
+            $("#divFotoContext").on("click", this.contextClicked);
         },
         adjustPhotosDelayed:function (forse) {
             ++mimas.foto.adjustPhotosCounter;
@@ -127,6 +139,7 @@
         },
         adjustPhotos:function () {
             try {
+                mimas.foto.albumView.hidePhoto();
                 var $images = $("#divFotoContext img");
                 var maxWidth = 0;
                 $images.each(function () {
@@ -139,7 +152,7 @@
                 });
                 if (maxWidth == null) return;
                 var first = -1, left = $images.eq(0).offset().left;
-                $images.css("padding-right", 0);
+                $images.css("margin", "2px 0");
                 $images.each(function (n) {
                     var $img = $(this);
                     if ($img.offset().left == left) {
@@ -151,7 +164,7 @@
                                 var d1 = (maxWidth - w) % (n - first - 1);
                                 for (var i = first; i < n - 1; i++) {
                                     var dx = d + (d1-- > 0 ? 1 : 0);
-                                    $images.eq(i).css("padding-right", dx);
+                                    $images.eq(i).css("margin-right", dx);
                                 }
                             }
                         }
@@ -166,7 +179,63 @@
                     mimas.foto.albumView.adjustPhotosDelayed(true);
                 }
             }
+        },
+        showPhoto:function (a) {
+            var $srcImg = $(a).find("img");
+            var $img = this.$img;
+            this.hidePhoto(function () {
+                $img.css({left:$srcImg.position().left, top:$srcImg.position().top, width:$srcImg.width(), height:$srcImg.height()});
+                $img.attr("src", $srcImg.attr("src"));
+                var $context = $("#divFotoContext");
+                var w = $context.width() * .8;
+                var h = $context.height() * .8;
+                var w1 = w, h1 = h;
+                if ($srcImg.width() > $srcImg.height()) {
+                    h1 = w * $srcImg.height() / $srcImg.width();
+                } else {
+                    w1 = h * $srcImg.width() / $srcImg.height();
+                }
+                $img.stop(true, true).animate({left:($context.width() - w1) / 2 + $context.position().left, top:($context.height() - h1) / 2 - $context.position().top, "width":w1, "height":h1});
+                $img.attr("src", $(a).attr("href"));
+                $img.data("srcImg", $srcImg);
+            });
+            return false;
+        },
+        contextClicked:function (e) {
+            if (e && ($(e.srcElement).is("div") || $(e.srcElement).is("ul"))) {
+                mimas.foto.albumView.hidePhoto();
+            }
+        },
+        hidePhoto:function (onHide) {
+            var $img = mimas.foto.albumView.$img;
+            if (!onHide) {
+                onHide = function () {
+                    $img.hide();
+                }
+            }
+            var $srcImg = $img.data("srcImg");
+            if ($srcImg && $srcImg.length) {
+                $img.stop(true, true).animate({left:$srcImg.position().left, top:$srcImg.position().top, width:$srcImg.width(), height:$srcImg.height()}, "fast", onHide);
+            } else {
+                onHide();
+            }
+        },
+        imgLoaded:function () {
+            this.$img.show();
+        },
+        imgClicked:function () {
+            var $srcImg = this.$img.data("srcImg");
+            if ($srcImg && $srcImg.length) {
+                var next = $srcImg.parent().next();
+                if (next.length) {
+                    this.showPhoto(next.get(0));
+                } else {
+                    this.hidePhoto();
+                }
+            }
         }
     });
 
 </script>
+
+<img id="imgFoto" onload="mimas.foto.albumView.imgLoaded()" onclick="mimas.foto.albumView.imgClicked()">

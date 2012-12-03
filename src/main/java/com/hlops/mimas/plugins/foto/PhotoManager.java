@@ -38,7 +38,7 @@ public class PhotoManager {
 
     private PhotoManager() {
         albums = new ArrayList<Album>();
-        albums.add(createAlbum("D:/Anton/Сканы"));
+        albums.add(createAlbum("D:/Media/mimas/photos"));
     }
 
     public List<Album> listAlbums() {
@@ -90,11 +90,18 @@ public class PhotoManager {
         for (Photo photo : album.getItems()) {
             System.out.println(photo.getThumbnail());
             try {
-                BufferedImage originalImage = ImageIO.read(new File(album.getPath(), photo.getName()));
+                File srcFile = new File(album.getPath(), photo.getName());
+                File destFile = new File(album.getPath(), photo.getThumbnail());
+
+                if (destFile.exists() && destFile.lastModified() > srcFile.lastModified()) {
+                    continue;
+                }
+
+                BufferedImage originalImage = ImageIO.read(srcFile);
                 int type = originalImage.getType() == 0 ? BufferedImage.TYPE_INT_ARGB : originalImage.getType();
                 BufferedImage resizedImage = resizeImage(originalImage, type);
 
-                ImageIO.write(resizedImage, "jpg", new File(album.getPath(), photo.getThumbnail()));
+                ImageIO.write(resizedImage, "jpg", destFile);
             } catch (IOException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
