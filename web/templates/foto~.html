@@ -116,25 +116,7 @@
             this.collection.bind('reset', this.render, this);
         },
         render:function () {
-            function renderAlbums(albums) {
-                var $ul = $('<ul class="nav nav-list bs-docs-sidenav scroll"><ul>');
-                var $pos = $ul.find("ul:first");
-                albums.each(function (album) {
-                    if (album) {
-                        var $li = $pos.append('<li></li>');
-                        var $pos1 = $ul.find("li:last");
-                        $pos1.append(album.get("name"));
-                        var children = album.get("albums");
-                        if (children) {
-                            var s = renderAlbums(new Albums(children));
-                            $pos1.append(s);
-                        }
-                    }
-                });
-                return $ul;
-            }
-
-            $("#divFotoMenu").append(renderAlbums(this.collection));
+            $("#divFotoMenu").append(mimas.getTemplate("_albums")({albums:this.collection}));
         }
     });
 

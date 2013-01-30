@@ -3,9 +3,7 @@ package com.hlops.mimas.plugins.foto.dto;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.FalseFileFilter;
-import org.apache.commons.io.filefilter.NameFileFilter;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
-import org.apache.commons.io.filefilter.WildcardFileFilter;
 
 import java.io.File;
 import java.util.ArrayList;

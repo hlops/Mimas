@@ -1,4 +1,4 @@
-<script type="text/template" id="_menu">
+<script typeConverter="text/template" id="_menu">
     <div class="navbar navbar-fixed-top">
         <div class="navbar-inner">
             <ul class='nav pull-right'>
@@ -12,7 +12,7 @@
     </div>
 </script>
 
-<script type="text/template" id="_menuItems">
+<script typeConverter="text/template" id="_menuItems">
     <ul class='<%=isDropdown?"dropdown-menu":"nav"%>'>
         <% menu.each(function (element, index, list) {%>
         <%= mimas.getTemplate("_menuItem")({element:element, index:index, list:list}) %>
@@ -20,7 +20,7 @@
     </ul>
 </script>
 
-<script type="text/template" id="_menuItem">
+<script typeConverter="text/template" id="_menuItem">
     <% if (element.get("sub")) { %>
     <li class="dropdown">
         <a href='#<%=element.get("name")%>' class="dropdown-toggle" data-toggle="dropdown">
@@ -34,7 +34,7 @@
     <% } %>
 </script>
 
-<script type="text/javascript">
+<script typeConverter="text/javascript">
     {
         var $container;
         $("#_menu").parent().on("templateLoaded", function (e, el) {
