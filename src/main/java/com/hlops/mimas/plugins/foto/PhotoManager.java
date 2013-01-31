@@ -66,7 +66,7 @@ public class PhotoManager {
 
     public Album getAlbum(long id) {
         Album album = albumsMap.get(id);
-        album.loadItems();
+        //album.loadItems();
         return album;
     }
 
@@ -78,7 +78,7 @@ public class PhotoManager {
     }
 
     public void createThumbnail(Album album) {
-        album.loadItems();
+        //album.loadItems();
         File mimas = new File(album.getPath(), PhotoManager.MIMAS_DIRECTORY_NAME);
         if (mimas.mkdir()) {
             try {
