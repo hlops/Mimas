@@ -1,13 +1,9 @@
 package com.hlops.mimas.plugins.foto.dto;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOCase;
-import org.apache.commons.io.filefilter.FalseFileFilter;
-import org.apache.commons.io.filefilter.SuffixFileFilter;
+import com.hlops.mimas.plugins.foto.descriptor.AlbumDescriptor;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -37,6 +33,10 @@ public class Album {
 
     public Album(String path, String name) {
         this(path, name, null, new ArrayList<Photo>(), new ArrayList<Album>());
+    }
+
+    public Album(AlbumDescriptor descriptor) {
+        this(descriptor.getPath(), "");
     }
 
     public Album(String path, String name, String description, List<Photo> items, List<Album> albums) {
@@ -73,22 +73,19 @@ public class Album {
         return albums;
     }
 
-    public void loadItems() {
-        synchronized (isLoaded) {
-            if (!isLoaded) {
-                File root = new File(path);
-                Iterator<File> it = FileUtils.iterateFiles(root, new SuffixFileFilter(IMAGE_EXTENSIONS, IOCase.SYSTEM), FalseFileFilter.FALSE);
-                this.items.clear();
-                while (it.hasNext()) {
-                    File f = it.next();
-                    System.out.println(f.getName());
-                    this.items.add(new Photo(f));
-                }
+    /*
+        public void loadItems() {
+            File root = new File(path);
+            Iterator<File> it = FileUtils.iterateFiles(root, new SuffixFileFilter(IMAGE_EXTENSIONS, IOCase.SYSTEM), FalseFileFilter.FALSE);
+            this.items.clear();
+            while (it.hasNext()) {
+                File f = it.next();
+                System.out.println(f.getName());
+                this.items.add(new Photo(f));
             }
-            isLoaded = true;
         }
-    }
 
+    */
     public Photo getPhoto(String name) {
         File root = new File(path);
         return new Photo(new File(root, name));
